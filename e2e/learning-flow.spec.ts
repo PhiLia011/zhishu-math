@@ -52,3 +52,31 @@ test('opens the comprehensive quiz from its direct URL', async ({ page }) => {
   await expect(page.getByText('0/20 已答')).toBeVisible()
   expect(pageErrors).toEqual([])
 })
+
+test('opens every chapter and primary page from a direct URL', async ({ page }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+  const routes = [
+    ['/', '把高中数学'],
+    ['/#/tests', '测试中心'],
+    ['/#/mistakes', '错题本'],
+    ['/#/progress', '学习报告'],
+    ['/#/chapter/sets-logic/sets-1', '集合与元素'],
+    ['/#/chapter/quadratic-inequality/quad-1', '二次函数的三种形式'],
+    ['/#/chapter/functions/func-1', '函数的概念'],
+    ['/#/chapter/exp-log/exp-1', '指数幂的扩展'],
+    ['/#/chapter/trigonometry/trig-2', '单位圆与三角函数'],
+    ['/#/chapter/vectors/vector-1', '向量的概念'],
+    ['/#/chapter/complex-numbers/complex-1', '虚数单位'],
+    ['/#/chapter/solid-geometry/solid-1', '空间点、线、面'],
+    ['/#/chapter/statistics-probability/stat-1', '抽样方法'],
+    ['/#/chapter/sets-logic?view=examples', '两道精讲例题'],
+    ['/#/this-route-does-not-exist', '这个数学空间不存在']
+  ] as const
+
+  for (const [route, heading] of routes) {
+    await page.goto(route)
+    await expect(page.getByText(heading, { exact: false }).first()).toBeVisible()
+  }
+  expect(pageErrors).toEqual([])
+})

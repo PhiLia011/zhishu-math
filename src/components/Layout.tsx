@@ -111,18 +111,18 @@ export function Layout() {
           </button>
         )}
 
-        {!online && (
-          <div className="offline-badge">
-            <WifiOff size={16} />
-            离线模式 · 进度仍会保存
-          </div>
-        )}
-
         <div className="sidebar-foot">
           <BookOpen size={16} />
           <span>按人教A版核心章节编写</span>
         </div>
       </aside>
+
+      {!online && (
+        <div className="offline-badge" role="status">
+          <WifiOff size={16} />
+          离线模式 · 进度仍会保存
+        </div>
+      )}
 
       <main className="app-main">
         <Outlet />
