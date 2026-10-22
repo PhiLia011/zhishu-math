@@ -22,7 +22,6 @@ export function App() {
             <Route path="chapter/:chapterId/:cardId" element={<ChapterPage />} />
             <Route path="tests" element={<TestCenterPage />} />
             <Route path="quiz/resume" element={<ResumeRedirect />} />
-            <Route path="quiz/comprehensive" element={<QuizPage />} />
             <Route path="quiz/chapter/:chapterId" element={<QuizPage />} />
             <Route path="quiz/:mode" element={<QuizPage />} />
             <Route path="results/:attemptId" element={<ResultsPage />} />

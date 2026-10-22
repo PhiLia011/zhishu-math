@@ -26,10 +26,20 @@ export function QuizPage() {
   const { mode, chapterId } = useParams()
   const navigate = useNavigate()
   const { progress, setActiveQuiz, submitQuiz } = useProgress()
-  const typedMode = mode === 'comprehensive' ? 'comprehensive' : 'chapter'
+  const typedMode =
+    mode === 'comprehensive'
+      ? 'comprehensive'
+      : mode === 'chapter' || chapterId
+        ? 'chapter'
+        : null
   const chapter = chapterId ? chapterMap.get(chapterId) : undefined
+  const validRoute =
+    typedMode === 'comprehensive'
+      ? !chapterId
+      : typedMode === 'chapter' && Boolean(chapter)
 
-  const [quiz, setQuiz] = useState<ActiveQuiz>(() => {
+  const [quiz, setQuiz] = useState<ActiveQuiz | null>(() => {
+    if (!validRoute || !typedMode) return null
     const existing = progress.activeQuiz
     const sameMode = existing?.mode === typedMode
     const sameChapter = typedMode === 'comprehensive' || existing?.chapterId === chapterId
@@ -43,32 +53,34 @@ export function QuizPage() {
   const [warning, setWarning] = useState('')
 
   useEffect(() => {
-    setActiveQuiz(quiz)
+    if (quiz) setActiveQuiz(quiz)
     // The active session is captured once when entering the test.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const questions = useMemo(
     () =>
-      quiz.questionIds
+      (quiz?.questionIds ?? [])
         .map((id) => questionMap.get(id))
         .filter((question) => question !== undefined),
     [quiz]
   )
   const question = questions[current]
-  const answered = questions.filter((item) => isAnswered(quiz.answers[item.id])).length
-  const percent = Math.round((answered / questions.length) * 100)
+  const answered = questions.filter((item) => isAnswered(quiz?.answers[item.id])).length
+  const percent = questions.length ? Math.round((answered / questions.length) * 100) : 0
 
-  if (typedMode === 'chapter' && !chapter) return <Navigate to="/tests" replace />
-  if (!question) return <Navigate to="/tests" replace />
+  if (!typedMode || !validRoute || !quiz || !question) {
+    return <Navigate to="/tests" replace />
+  }
 
+  const activeQuiz = quiz
   const title = typedMode === 'comprehensive' ? '综合能力卷' : `${chapter?.shortTitle} · 章节小测`
 
   function updateAnswer(answer: string[]) {
-    const nextQuiz = {
-      ...quiz,
+    const nextQuiz: ActiveQuiz = {
+      ...activeQuiz,
       answers: {
-        ...quiz.answers,
+        ...activeQuiz.answers,
         [question.id]: answer
       }
     }
@@ -78,12 +90,12 @@ export function QuizPage() {
   }
 
   function handleSubmit() {
-    const unanswered = questions.filter((item) => !isAnswered(quiz.answers[item.id])).length
+    const unanswered = questions.filter((item) => !isAnswered(activeQuiz.answers[item.id])).length
     if (unanswered > 0) {
       setWarning(`还有 ${unanswered} 道题未作答；完成全部题目后再交卷。`)
       return
     }
-    const attempt = submitQuiz(quiz)
+    const attempt = submitQuiz(activeQuiz)
     navigate(`/results/${attempt.id}`)
   }
 

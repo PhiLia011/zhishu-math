@@ -42,3 +42,13 @@ test('keeps an unfinished quiz answer after reload', async ({ page }) => {
   await page.reload()
   await expect(page.getByText('1/10 已答')).toBeVisible()
 })
+
+test('opens the comprehensive quiz from its direct URL', async ({ page }) => {
+  const pageErrors: string[] = []
+  page.on('pageerror', (error) => pageErrors.push(error.message))
+
+  await page.goto('/#/quiz/comprehensive')
+  await expect(page.getByRole('heading', { name: '综合能力卷' })).toBeVisible()
+  await expect(page.getByText('0/20 已答')).toBeVisible()
+  expect(pageErrors).toEqual([])
+})
